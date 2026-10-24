@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "subscription-tracker",
+    "name": "Bills cycle",
     "slug": "subscription-tracker",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -8,16 +8,21 @@
     "scheme": "subscriptiontracker",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "bundleIdentifier": "com.faraji.subscriptiontracker"
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#DDF4EC",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "SCHEDULE_EXACT_ALARM"
+      ],
+      "package": "com.faraji.subscriptiontracker"
     },
     "web": {
       "output": "static",
@@ -32,11 +37,20 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
         }
-      ]
+      ],
+      "expo-sqlite",
+      "expo-sharing",
+      "expo-notifications"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "55bb86bf-a789-4c48-b235-26fab7278bce"
+      }
     }
   }
 }
