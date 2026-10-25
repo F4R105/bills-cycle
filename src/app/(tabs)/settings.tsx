@@ -1,6 +1,7 @@
 import Constants from 'expo-constants';
 import * as DocumentPicker from 'expo-document-picker';
 import { File } from 'expo-file-system';
+import { router } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useState } from 'react';
 import { Alert, StyleSheet, Switch, View } from 'react-native';
@@ -101,6 +102,8 @@ export default function SettingsScreen() {
           setBusy(true);
           try {
             await importData(db, backup);
+            // Older backups have no onboarding flag; restoring one shouldn't reopen onboarding.
+            await updateSetting('onboardingSeen', true);
             await reloadSettings();
             await syncReminders(db);
             Alert.alert('Import complete', 'Your data has been restored.');
@@ -208,6 +211,14 @@ export default function SettingsScreen() {
         <ListRow icon="import" label="Import backup" onPress={busy ? undefined : importBackup} />
         <ListRow icon="trash" label="Delete all data" destructive onPress={busy ? undefined : confirmDeleteAll} />
       </ListGroup>
+
+      <ListGroup title="About">
+        <ListRow
+          icon="info"
+          label="User guide"
+          description="How cycles, unattended bills and reminders work."
+          onPress={() => router.push('/user-guide')}
+        />      </ListGroup>
 
       <View style={styles.about}>
         <ThemedText type="small" themeColor="textSecondary">

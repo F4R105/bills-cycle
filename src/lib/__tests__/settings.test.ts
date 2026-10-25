@@ -15,3 +15,11 @@ describe('parseSettings theme', () => {
     expect(parseSettings({ theme: 'nope', darkStyle: 'nope' })).toMatchObject({ theme: 'system', darkStyle: 'midnight' });
   });
 });
+
+describe('parseSettings onboarding', () => {
+  it('is unseen until stored as true', () => {
+    expect(parseSettings({}).onboardingSeen).toBe(false);
+    expect(parseSettings({ onboardingSeen: 'false' }).onboardingSeen).toBe(false);
+    expect(parseSettings({ onboardingSeen: 'true' }).onboardingSeen).toBe(true);
+  });
+});

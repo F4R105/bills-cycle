@@ -14,7 +14,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect, useMemo } from 'react';
 
 import { FontFamily, Radius } from '@/constants/theme';
-import { SettingsProvider } from '@/context/settings';
+import { SettingsProvider, useSettings } from '@/context/settings';
 import { DATABASE_NAME, migrateDbIfNeeded } from '@/db/schema';
 import { useResolvedScheme, useTheme } from '@/hooks/use-theme';
 
@@ -31,10 +31,6 @@ export default function RootLayout() {
     SpaceGrotesk_700Bold,
   });
   const ready = fontsLoaded || !!fontError;
-
-  useEffect(() => {
-    if (ready) SplashScreen.hideAsync();
-  }, [ready]);
 
   if (!ready) return null;
 
@@ -58,6 +54,12 @@ const sheet = {
 function ThemedNavigation() {
   const scheme = useResolvedScheme();
   const theme = useTheme();
+  const { settings, loaded } = useSettings();
+
+  // Wait for settings so the right theme and first screen (onboarding or Home) show at once.
+  useEffect(() => {
+    if (loaded) SplashScreen.hideAsync();
+  }, [loaded]);
 
   const navigationTheme = useMemo<Theme>(() => {
     const base = scheme === 'light' ? DefaultTheme : DarkTheme;
@@ -74,6 +76,8 @@ function ThemedNavigation() {
     };
   }, [scheme, theme]);
 
+  if (!loaded) return null;
+
   return (
     <ThemeProvider value={navigationTheme}>
       <StatusBar style={scheme === 'light' ? 'dark' : 'light'} />
@@ -84,16 +88,23 @@ function ThemedNavigation() {
           headerTitleStyle: { fontFamily: FontFamily.bold },
           contentStyle: { backgroundColor: theme.background },
         }}>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="bill/[id]" options={{ title: 'Bill' }} />
-        <Stack.Screen name="cycle/[id]" options={{ title: 'Cycle' }} />
-        <Stack.Screen name="reports" options={{ title: 'Reports' }} />
-        <Stack.Screen name="cycle-form" options={{ ...sheet, headerShown: false }} />
-        <Stack.Screen name="income-form" options={{ ...sheet, headerShown: false }} />
-        <Stack.Screen name="pay" options={{ ...sheet, headerShown: false }} />
-        <Stack.Screen name="bill-form" options={{ ...sheet, sheetAllowedDetents: [0.92], headerShown: false }} />
-        {/* One fixed detent: the tools sheet can't be dragged taller. */}
-        <Stack.Screen name="tools" options={{ ...sheet, sheetAllowedDetents: [0.82], headerShown: false }} />
+        {/* Until onboarding is finished it is the only screen, so a new user starts there. */}
+        <Stack.Protected guard={!settings.onboardingSeen}>
+          <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+        </Stack.Protected>
+        <Stack.Protected guard={settings.onboardingSeen}>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="bill/[id]" options={{ title: 'Bill' }} />
+          <Stack.Screen name="cycle/[id]" options={{ title: 'Cycle' }} />
+          <Stack.Screen name="reports" options={{ title: 'Reports' }} />
+          <Stack.Screen name="user-guide" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
+          <Stack.Screen name="cycle-form" options={{ ...sheet, headerShown: false }} />
+          <Stack.Screen name="income-form" options={{ ...sheet, headerShown: false }} />
+          <Stack.Screen name="pay" options={{ ...sheet, headerShown: false }} />
+          <Stack.Screen name="bill-form" options={{ ...sheet, sheetAllowedDetents: [0.92], headerShown: false }} />
+          {/* One fixed detent: the tools sheet can't be dragged taller. */}
+          <Stack.Screen name="tools" options={{ ...sheet, sheetAllowedDetents: [0.82], headerShown: false }} />
+        </Stack.Protected>
       </Stack>
     </ThemeProvider>
   );

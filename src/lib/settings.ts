@@ -12,6 +12,8 @@ export type Settings = {
   reminderDaysBefore: number;
   /** "HH:MM", 24-hour local time. */
   reminderTime: string;
+  /** Set once the first-launch onboarding has been finished or skipped. */
+  onboardingSeen: boolean;
 };
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -21,6 +23,7 @@ export const DEFAULT_SETTINGS: Settings = {
   notificationsEnabled: false,
   reminderDaysBefore: 2,
   reminderTime: '09:00',
+  onboardingSeen: false,
 };
 
 /** Builds typed settings from the key/value rows stored in SQLite. Unknown keys are ignored. */
@@ -49,6 +52,7 @@ export function parseSettings(raw: Record<string, string>): Settings {
     reminderTime: /^\d{2}:\d{2}$/.test(raw.reminderTime ?? '')
       ? raw.reminderTime
       : DEFAULT_SETTINGS.reminderTime,
+    onboardingSeen: raw.onboardingSeen === 'true',
   };
 }
 

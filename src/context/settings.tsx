@@ -16,6 +16,8 @@ import {
 
 type SettingsContextValue = {
   settings: Settings;
+  /** False until settings have been read from the database; `settings` holds defaults until then. */
+  loaded: boolean;
   updateSetting: <K extends keyof Settings>(key: K, value: Settings[K]) => Promise<void>;
   /** Re-reads settings from the database, e.g. after importing a backup. */
   reloadSettings: () => Promise<void>;
@@ -26,6 +28,7 @@ const SettingsContext = createContext<SettingsContextValue | null>(null);
 export function SettingsProvider({ children }: { children: ReactNode }) {
   const db = useSQLiteContext();
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
+  const [loaded, setLoaded] = useState(false);
 
   const reloadSettings = useCallback(async () => {
     setSettings(parseSettings(await getAllSettings(db)));
@@ -37,6 +40,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       const loaded = parseSettings(await getAllSettings(db));
       if (cancelled) return;
       setSettings(loaded);
+      setLoaded(true);
       // Roll over any cycles that ended while the app was closed, then refresh reminders.
       await ensureCurrentCycle(db, todayISO(), loaded.cycleLengthMonths);
       await syncReminders(db);
@@ -60,7 +64,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   );
 
   return (
-    <SettingsContext.Provider value={{ settings, updateSetting, reloadSettings }}>
+    <SettingsContext.Provider value={{ settings, loaded, updateSetting, reloadSettings }}>
       {children}
     </SettingsContext.Provider>
   );
